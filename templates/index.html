@@ -1,4 +1,282 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power4 Web</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        h1 {
+            margin-top: 0;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-size: 2.5em;
+        }
+        
+        .game-info {
+            margin: 20px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .current-player {
+            padding: 10px 20px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            display: inline-block;
+            margin: 10px 0;
+        }
+        
+        .player-red { color: #ff4757; }
+        .player-yellow { color: #ffa502; }
+        .winner { color: #2ed573; font-size: 1.5em; }
+        .draw { color: #ff6b6b; font-size: 1.5em; }
+        
+        .board {
+            background: #2c3e50;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .board-table {
+            border-collapse: separate;
+            border-spacing: 5px;
+            margin: 0 auto;
+        }
+        
+        .cell {
+            width: 60px;
+            height: 60px;
+            background: #34495e;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .cell.red {
+            background: radial-gradient(circle, #ff4757, #c44569);
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+        }
+        
+        .cell.yellow {
+            background: radial-gradient(circle, #ffa502, #ff6348);
+            box-shadow: 0 2px 8px rgba(255, 165, 2, 0.4);
+        }
+        
+        .controls {
+            margin: 20px 0;
+        }
+        
+        .column-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .column-btn {
+            background: linear-gradient(45deg, #3742fa, #2f3542);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(55, 66, 250, 0.3);
+        }
+        
+        .column-btn:hover:not(:disabled) {
+            background: linear-gradient(45deg, #2742fa, #1f2542);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(55, 66, 250, 0.4);
+        }
+        
+        .column-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .reset-btn {
+            background: linear-gradient(45deg, #ff4757, #c44569);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+        }
+        
+        .reset-btn:hover {
+            background: linear-gradient(45deg, #e84057, #b44569);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
+        }
+        
+        .column-numbers {
+            display: flex;
+            justify-content: center;
+            gap: 29px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #ddd;
+        }
+        
+        .column-number {
+            width: 60px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔴 Power4 Web 🟡</h1>
+        
+        <div class="game-info">
+            {{if .Winner}}
+                <div class="winner">
+                    🎉 Joueur {{if eq .Winner "R"}}Rouge{{else}}Jaune{{end}} a gagné ! 🎉
+                </div>
+            {{else if .Draw}}
+                <div class="draw">
+                    🤝 Match nul ! 🤝
+                </div>
+            {{else}}
+                <div class="current-player">
+                    Au tour du joueur 
+                    <span class="{{if eq .CurrentPlayer "R"}}player-red{{else}}player-yellow{{end}}">
+                        {{if eq .CurrentPlayer "R"}}🔴 Rouge{{else}}🟡 Jaune{{end}}
+                    </span>
+                </div>
+            {{end}}
+        </div>
+        
+        <div class="board">
+            <div class="column-numbers">
+                <div class="column-number">0</div>
+                <div class="column-number">1</div>
+                <div class="column-number">2</div>
+                <div class="column-number">3</div>
+                <div class="column-number">4</div>
+                <div class="column-number">5</div>
+                <div class="column-number">6</div>
+            </div>
+            
+            <div class="column-buttons">
+                <form method="POST" action="/play" style="display: inline;">
+                    <input type="hidden" name="col" value="0">
+                    <button type="submit" class="column-btn" 
+                            {{if or .Winner .Draw}}disabled{{end}}
+                            {{if and (not .Winner) (not .Draw) (eq (index .Board 0 0) "")}}{{else}}disabled{{end}}>
+                        ↓
+                    </button>
+                </form>
+                <form method="POST" action="/play" style="display: inline;">
+                    <input type="hidden" name="col" value="1">
+                    <button type="submit" class="column-btn" 
+                            {{if or .Winner .Draw}}disabled{{end}}
+                            {{if and (not .Winner) (not .Draw) (eq (index .Board 0 1) "")}}{{else}}disabled{{end}}>
+                        ↓
+                    </button>
+                </form>
+                <form method="POST" action="/play" style="display: inline;">
+                    <input type="hidden" name="col" value="2">
+                    <button type="submit" class="column-btn" 
+                            {{if or .Winner .Draw}}disabled{{end}}
+                            {{if and (not .Winner) (not .Draw) (eq (index .Board 0 2) "")}}{{else}}disabled{{end}}>
+                        ↓
+                    </button>
+                </form>
+                <form method="POST" action="/play" style="display: inline;">
+                    <input type="hidden" name="col" value="3">
+                    <button type="submit" class="column-btn" 
+                            {{if or .Winner .Draw}}disabled{{end}}
+                            {{if and (not .Winner) (not .Draw) (eq (index .Board 0 3) "")}}{{else}}disabled{{end}}>
+                        ↓
+                    </button>
+                </form>
+                <form method="POST" action="/play" style="display: inline;">
+                    <input type="hidden" name="col" value="4">
+                    <button type="submit" class="column-btn" 
+                            {{if or .Winner .Draw}}disabled{{end}}
+                            {{if and (not .Winner) (not .Draw) (eq (index .Board 0 4) "")}}{{else}}disabled{{end}}>
+                        ↓
+                    </button>
+                </form>
+                <form method="POST" action="/play" style="display: inline;">
+                    <input type="hidden" name="col" value="5">
+                    <button type="submit" class="column-btn" 
+                            {{if or .Winner .Draw}}disabled{{end}}
+                            {{if and (not .Winner) (not .Draw) (eq (index .Board 0 5) "")}}{{else}}disabled{{end}}>
+                        ↓
+                    </button>
+                </form>
+                <form method="POST" action="/play" style="display: inline;">
+                    <input type="hidden" name="col" value="6">
+                    <button type="submit" class="column-btn" 
+                            {{if or .Winner .Draw}}disabled{{end}}
+                            {{if and (not .Winner) (not .Draw) (eq (index .Board 0 6) "")}}{{else}}disabled{{end}}>
+                        ↓
+                    </button>
+                </form>
+            </div>
+            
+            <table class="board-table">
+                {{range $row := .Board}}
+                    <tr>
+                        {{range $cell := $row}}
+                            <td>
+                                <div class="cell {{if eq $cell "R"}}red{{else if eq $cell "Y"}}yellow{{end}}"></div>
+                            </td>
+                        {{end}}
+                    </tr>
+                {{end}}
+            </table>
+        </div>
+        
+        <div class="controls">
+            <form method="POST" action="/reset" style="display: inline;">
+                <button type="submit" class="reset-btn">🔄 Nouvelle Partie</button>
+            </form>
+        </div>
+    </div>
     
+    <script>
+        // Disable form submission on disabled buttons
+        document.querySelectorAll('.column-btn[disabled]').forEach(btn => {
+            btn.closest('form').addEventListener('submit', (e) => {
+                e.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>
